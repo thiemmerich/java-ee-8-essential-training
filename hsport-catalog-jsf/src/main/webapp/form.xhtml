@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+<ui:composition template="/template.xhtml">
+	<ui:define name="pageHeader">#{msg['form.pageTitle']}</ui:define>
+	<ui:define name="body">
+		<h:form>
+			<div>
+				<h:outputLabel value="Product Name" />
+				<h:inputText value="#{catalogItemFormBean.name}" />
+			</div>
+			<h:commandButton action="list" value="Submit" />
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>
