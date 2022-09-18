@@ -1,4 +1,4 @@
-package com.linkedin.jsf;
+package com.linkedin;
 
 import java.time.LocalDate;
 
