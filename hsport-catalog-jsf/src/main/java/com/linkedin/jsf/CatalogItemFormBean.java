@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.linkedin.CatalogItem;
@@ -18,10 +19,13 @@ import org.jboss.logging.Logger;
 public class CatalogItemFormBean implements Serializable {
 	private static final Logger LOG = Logger.getLogger(CatalogItemFormBean.class);
 	private static final long serialVersionUID = 382061028856044729L;
-	
-	@EJB
+
+	@Inject
 	private CatalogLocal catalogBean;
-	
+
+	@Inject
+	private InventoryService inventoryService;
+
 	private CatalogItem item = new CatalogItem();
 	private List<CatalogItem> items = new ArrayList<>();
 
@@ -41,9 +45,12 @@ public class CatalogItemFormBean implements Serializable {
 		this.catalogBean.addItem(newItem);
 		LOG.info("Item added: " + newItem.toString());
 
+		LOG.info("Creating the item on inventory service...");
+		this.inventoryService.createItem(newItem.getItemId(), newItem.getName());
+
 		return "list?faces-redirect=true";
 	}
-	
+
 	public void init() {
 		this.items = this.catalogBean.getItems();
 	}
