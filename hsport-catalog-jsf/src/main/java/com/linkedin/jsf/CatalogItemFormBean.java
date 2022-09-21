@@ -4,8 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -14,9 +13,10 @@ import com.linkedin.CatalogLocal;
 
 import org.jboss.logging.Logger;
 
-@SessionScoped
+@RequestScoped
 @Named("catalogItemFormBean")
 public class CatalogItemFormBean implements Serializable {
+
 	private static final Logger LOG = Logger.getLogger(CatalogItemFormBean.class);
 	private static final long serialVersionUID = 382061028856044729L;
 
@@ -26,11 +26,16 @@ public class CatalogItemFormBean implements Serializable {
 	@Inject
 	private InventoryService inventoryService;
 
+	private String searchText;
 	private CatalogItem item = new CatalogItem();
 	private List<CatalogItem> items = new ArrayList<>();
 
+	public void searchByName() {
+		this.items = this.catalogBean.searchByName(this.searchText);
+	}
+
 	public String addItem() {
-		long itemId = this.catalogBean.getItems().size() + 1;
+		// long itemId = this.catalogBean.getItems().size() + 1;
 
 		LOG.info("Creating a new item coping the existing one");
 		CatalogItem newItem = this.item;
@@ -38,8 +43,8 @@ public class CatalogItemFormBean implements Serializable {
 		LOG.info("Now instanciating a new object to clean the object");
 		this.item = new CatalogItem();
 
-		LOG.info("Setting the id " + itemId + " to the new object");
-		newItem.setItemId(itemId);
+		// LOG.info("Setting the id " + itemId + " to the new object");
+		// newItem.setItemId(itemId);
 
 		LOG.info("Id set to the new object -> " + newItem.getItemId());
 		this.catalogBean.addItem(newItem);
@@ -69,6 +74,14 @@ public class CatalogItemFormBean implements Serializable {
 
 	public void setItems(List<CatalogItem> items) {
 		this.items = items;
+	}
+
+	public String getSearchText() {
+		return searchText;
+	}
+
+	public void setSearchText(String searchText) {
+		this.searchText = searchText;
 	}
 
 }
