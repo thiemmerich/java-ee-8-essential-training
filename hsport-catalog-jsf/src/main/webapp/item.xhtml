@@ -9,12 +9,14 @@
 	<f:metadata>
 		<f:viewParam name="itemId" value="#{catalogItemDetailBean.itemId}"></f:viewParam>
 		<f:event type="preRenderView"
-			listener="#{catalogItemDetailBean.fetchItem}" />
+			listener="#{catalogItemDetailBean.fetchItem()}" />
 	</f:metadata>
+
 	<ui:define name="pageHeader">
 		<h:link value="#{msg['form.pageTitle']}" outcome="form" /> |
 		<h:link value="#{msg['list.pageTitle']}" outcome="list" />
 	</ui:define>
+
 	<ui:define name="body">
 
 		<div>
@@ -39,7 +41,7 @@
 		<h:panelGroup id="managerList">
 			<ui:repeat value="#{catalogItemDetailBean.item.itemManagers}"
 				varStatus="status">
-				<h:outputText
+				<h:outputText style="margin-right: 3px;"
 					value="#{catalogItemDetailBean.item.itemManagers[status.index].firstName}" />
 				<h:outputText
 					value="${catalogItemDetailBean.item.itemManagers[status.index].lastName}" />
@@ -47,20 +49,32 @@
 			</ui:repeat>
 		</h:panelGroup>
 
-		<h:form>
+		<h:form id="managerForm">
 			<h3>Add an Item Manager</h3>
 			<div>
-				<h:outputLabel value="First Name" />
-				<h:inputText id="firstName"
-					value="#{catalogItemDetailBean.manager.firstName}"></h:inputText>
-				<br /> <br />
-				<h:outputLabel value="Last Name" />
-				<h:inputText id="lastName"
-					value="#{catalogItemDetailBean.manager.lastName}"></h:inputText>
+				<div class="errorMessage">
+					<h:messages />
+				</div>
+				<div>
+					<h:outputLabel value="First Name" />
+					<h:inputText id="firstName"
+						value="#{catalogItemDetailBean.manager.firstName}"></h:inputText>
+				</div>
+				<div>
+					<h:outputLabel value="Last Name" />
+					<h:inputText id="lastName"
+						value="#{catalogItemDetailBean.manager.lastName}"></h:inputText>
+				</div>
+				<div>
+					<h:outputLabel value="Email" />
+					<h:inputText id="email"
+						value="#{catalogItemDetailBean.manager.email}"></h:inputText>
+				</div>
 			</div>
 			<h:commandButton value="Submit"
-				action="#{catalogItemDetailBean.addManager}">
-				<f:ajax execute="firstName lastName" render="managerList" />
+				action="#{catalogItemDetailBean.addManager()}">
+				<f:ajax execute="firstName lastName email"
+					render="managerList managerForm" />
 			</h:commandButton>
 		</h:form>
 	</ui:define>
