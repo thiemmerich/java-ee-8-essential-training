@@ -1,43 +1,73 @@
 package com.linkedin.jsf;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Random;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Future;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.inject.Named;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
 @RemoteService
-@Alternative
 public class RemoteInventoryService implements InventoryService {
 
 	private static final long serialVersionUID = 7537143093264901851L;
 	private static final Logger LOG = Logger.getLogger(RemoteInventoryService.class);
-	private Map<Long, InventoryItem> items = new HashMap<>();
+
+	private String apiUrl = "http://localhost:8080/hsports-catalog-jax/hsports/api/";
 
 	@Override
 	public void createItem(Long catalogItemId, String name) {
-		long inventoryItemId = items.size() + 1;
-		this.items.put(catalogItemId, new InventoryItem(inventoryItemId, catalogItemId, name, 0L));
-		this.printInventory();
-	}
+		LOG.info("Starting the request to end-point inventoryitems...");
+		Client client = ClientBuilder.newClient();
+		Response response = client.target(apiUrl)
+				.path("inventoryitems")
+				.request().post(Entity.json(new InventoryItem(null, catalogItemId, name, new Random().nextLong())));
 
-	private void printInventory() {
-		LOG.info("Remote inventory contains ["+this.items.size()+"] -> ");
-
-		for (Entry<Long, InventoryItem> entry : this.items.entrySet()) {
-			LOG.info("Entry: " + entry.getValue().getName());
-		}
-
+		LOG.info("Response Status: " + response.getStatus());
+		LOG.info("Response Path:" + response.getLocation().getPath());
 	}
 
 	@Override
 	public Long getQuantity(Long catalogItemId) {
-		return 0L;
+		Client client = ClientBuilder.newClient();
+		InventoryItem inventoryItem = client.target(apiUrl)
+				.path("inventoryitems")
+				.path("catalog")
+				.path("{catalogItemId}")
+				.resolveTemplate("catalogItemId", catalogItemId.toString())
+				.request().get(InventoryItem.class);
+
+		return inventoryItem.getQuantity();
+	}
+
+	@Override
+	public Future<InventoryItem> asyncGetQuantity(Long catalogItemId) {
+		Client client = ClientBuilder.newClient();
+		return client.target(apiUrl)
+				.path("inventoryitems")
+				.path("catalog")
+				.path("{catalogItemId}")
+				.resolveTemplate("catalogItemId", catalogItemId.toString())
+				.request()
+				.async().get(InventoryItem.class);
+	}
+
+	@Override
+	public CompletionStage<InventoryItem> reactiveGetQuantity(Long catalogItemId) {
+		Client client = ClientBuilder.newClient();
+		return client.target(apiUrl)
+				.path("inventoryitems")
+				.path("catalog")
+				.path("{catalogItemId}")
+				.resolveTemplate("catalogItemId", catalogItemId.toString())
+				.request()
+				.rx().get(InventoryItem.class);
 	}
 
 }

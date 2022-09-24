@@ -1,6 +1,9 @@
 package com.linkedin.jsf;
 
 import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -13,14 +16,21 @@ import com.linkedin.CatalogItem;
 import com.linkedin.CatalogLocal;
 import com.linkedin.ItemManager;
 
+import org.jboss.logging.Logger;
+
 @ConversationScoped
 @Named("catalogItemDetailBean")
 public class CatalogItemDatailBean implements Serializable {
 
+	private static final Logger LOG = Logger.getLogger(CatalogItemDatailBean.class);
 	private static final long serialVersionUID = 1L;
 	private long itemId;
-
 	private CatalogItem item;
+	private Long quantity;
+
+	@Inject
+	@RemoteService
+	private InventoryService inventoryService;
 
 	@Inject
 	private Conversation conversation;
@@ -30,8 +40,20 @@ public class CatalogItemDatailBean implements Serializable {
 
 	private ItemManager manager = new ItemManager();
 
-	public void fetchItem() {
+	public void fetchItem() throws InterruptedException, ExecutionException {
 		this.item = this.catalogBean.findItem(this.itemId);
+
+		CountDownLatch latch = new CountDownLatch(1);
+		this.inventoryService.reactiveGetQuantity(this.itemId).thenApply(item -> item.getQuantity())
+				.thenAccept(quantity -> {
+					this.setQuantity(quantity);
+					LOG.info("Quantity on reactive response: " + this.getQuantity());
+					latch.countDown();
+				});
+
+		LOG.info("Completed promise request processing...");
+
+		latch.await();
 	}
 
 	public void addManager() {
@@ -58,6 +80,14 @@ public class CatalogItemDatailBean implements Serializable {
 
 	public void setItemId(long itemId) {
 		this.itemId = itemId;
+	}
+
+	public Long getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(Long quantity) {
+		this.quantity = quantity;
 	}
 
 	public CatalogItem getItem() {

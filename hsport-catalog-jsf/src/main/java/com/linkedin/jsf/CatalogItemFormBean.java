@@ -24,6 +24,7 @@ public class CatalogItemFormBean implements Serializable {
 	private CatalogLocal catalogBean;
 
 	@Inject
+	@RemoteService
 	private InventoryService inventoryService;
 
 	private String searchText;
@@ -42,9 +43,6 @@ public class CatalogItemFormBean implements Serializable {
 
 		LOG.info("Now instanciating a new object to clean the object");
 		this.item = new CatalogItem();
-
-		// LOG.info("Setting the id " + itemId + " to the new object");
-		// newItem.setItemId(itemId);
 
 		LOG.info("Id set to the new object -> " + newItem.getItemId());
 		this.catalogBean.addItem(newItem);
