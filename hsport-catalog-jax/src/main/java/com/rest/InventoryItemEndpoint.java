@@ -1,23 +1,20 @@
 package com.rest;
 
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
@@ -25,6 +22,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
 import com.linkedin.InventoryItem;
+import com.linkedin.JmsService;
 
 import org.jboss.logging.Logger;
 
@@ -38,11 +36,17 @@ public class InventoryItemEndpoint {
 	@PersistenceContext
 	private EntityManager entityManager;
 
+	@Inject
+	private JmsService jmsService;
+
 	@Transactional
 	@POST
 	public Response create(final InventoryItem inventoryitem) {
 		LOG.info("Received item on end-point: " + inventoryitem.getName());
 		this.entityManager.persist(inventoryitem);
+
+		this.jmsService.send("Sending a test message to queue from end-point: " + inventoryitem.getName());
+
 		return Response.created(UriBuilder.fromResource(InventoryItemEndpoint.class)
 				.path(String.valueOf(inventoryitem.getCatalogItemId())).build()).build();
 	}
