@@ -1,0 +1,1 @@
+ Invoke-RestMethod -URI http://localhost:8080/hsports-catalog-jax/hsports/api/order -Method Post -InFile order.json -ContentType application/json

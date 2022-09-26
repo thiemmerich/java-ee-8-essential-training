@@ -6,6 +6,7 @@
 		<project>hsports-catalog-jsf</project>
 		<project>hsports-catalog-ejb</project>
 		<project>hsports-catalog-jax</project>
+		<project>hsports-catalog-secure</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
